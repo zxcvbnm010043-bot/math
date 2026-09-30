@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國高中數學公式大挑戰 - 互動選擇題測驗 App</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Microsoft JhengHei', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- KaTeX for high-quality math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', 'Microsoft JhengHei', sans-serif; }
+        .katex-display { margin: 0.5em 0 !important; }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
+
+    <header class="sticky top-0 z-40 backdrop-blur-md bg-white/80 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 shadow-sm">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="goToModeSelect()">
+                <div class="bg-gradient-to-tr from-indigo-600 to-violet-500 text-white p-2.5 rounded-xl shadow-md">
+                    <i class="fa-solid fa-graduation-cap text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-bold bg-gradient-to-r from-indigo-600 to-violet-500 bg-clip-text text-transparent">
+                        數學公式大挑戰
+                    </h1>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium hidden sm:block">國高中數學定律與公式選擇題測驗</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <button onclick="openDeployGuide()" class="flex items-center space-x-1.5 text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 px-3 py-2 rounded-xl border border-indigo-200 dark:border-indigo-800/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition">
+                    <i class="fa-brands fa-github text-sm"></i>
+                    <span class="hidden sm:inline">部署到 GitHub</span>
+                </button>
+                <button onclick="toggleDarkMode()" aria-label="切換深色模式" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition text-slate-600 dark:text-slate-300">
+                    <i id="theme-icon" class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-6 flex flex-col justify-center">
+
+        <!-- STEP 1: Mode & Scope Selector -->
+        <div id="setupCard" class="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-700/80 shadow-xl space-y-8">
+            <div class="text-center space-y-2">
+                <span class="px-3 py-1 bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 text-xs font-bold rounded-full">Math Formula Quiz App</span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">選擇測驗模式與範圍</h2>
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">考考你對國中與高中常見核心定理、等式與公式的熟悉度！</p>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Scope Option -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">測驗範圍 Scope</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <button type="button" onclick="selectScope('all')" scope-btn="all" class="scope-btn p-4 rounded-2xl border-2 text-left transition flex flex-col justify-between border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30">
+                            <div>
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="font-bold text-slate-900 dark:text-white text-sm">全範圍綜合</span>
+                                    <i class="fa-solid fa-layer-group text-indigo-600"></i>
+                                </div>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">國中基礎 + 高中全模組</p>
+                            </div>
+                        </button>
+                        <button type="button" onclick="selectScope('junior')" scope-btn="junior" class="scope-btn p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 text-left transition flex flex-col justify-between hover:border-slate-300">
+                            <div>
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="font-bold text-slate-900 dark:text-white text-sm">國中基礎</span>
+                                    <i class="fa-solid fa-seedling text-amber-500"></i>
+                                </div>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">乘法公式、勾股、距離公式</p>
+                            </div>
+                        </button>
+                        <button type="button" onclick="selectScope('senior')" scope-btn="senior" class="scope-btn p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 text-left transition flex flex-col justify-between hover:border-slate-300">
+                            <div>
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="font-bold text-slate-900 dark:text-white text-sm">高中進階</span>
+                                    <i class="fa-solid fa-fire text-rose-500"></i>
+                                </div>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">三角函數、微積分、向量等</p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quantity Option -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">題目數量 Questions</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <button type="button" onclick="selectCount(10)" count-btn="10" class="count-btn p-3 rounded-xl border-2 border-indigo-600 font-bold text-sm text-center transition bg-indigo-50/50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400">10 題速測</button>
+                        <button type="button" onclick="selectCount(20)" count-btn="20" class="count-btn p-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 font-bold text-sm text-center transition text-slate-700 dark:text-slate-300">20 題標準</button>
+                        <button type="button" onclick="selectCount(0)" count-btn="0" class="count-btn p-3 bg-white dark:bg-slate-800 rounded-xl border-2 border-slate-200 dark:border-slate-700 font-bold text-sm text-center transition text-slate-700 dark:text-slate-300 col-span-2 sm:col-span-1">挑戰全部題目</button>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="startQuiz()" class="w-full py-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold text-base rounded-2xl shadow-lg shadow-indigo-500/25 transition active:scale-[0.99] flex items-center justify-center space-x-2">
+                <span>開始挑戰</span>
+                <i class="fa-solid fa-arrow-right text-sm"></i>
+            </button>
+        </div>
+
+        <!-- STEP 2: Active Quiz Screen -->
+        <div id="quizCard" class="hidden bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-700/80 shadow-xl space-y-6">
+            <!-- Top Status Bar -->
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-700/60 pb-4">
+                <div class="flex items-center space-x-3">
+                    <span id="questionCategory" class="px-3 py-1 bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400 text-xs font-bold rounded-lg">三角函數</span>
+                    <span id="questionTracker" class="text-xs font-bold text-slate-400">第 1 / 10 題</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-1.5 text-slate-500 dark:text-slate-400 text-xs font-bold">
+                        <i class="fa-regular fa-clock text-indigo-500"></i>
+                        <span id="timerText">00:00</span>
+                    </div>
+                    <div class="flex items-center space-x-1.5 text-emerald-500 text-xs font-bold">
+                        <i class="fa-solid fa-check"></i>
+                        <span id="scoreText">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+                <div id="progressBar" class="bg-indigo-600 h-2 rounded-full transition-all duration-300 w-0"></div>
+            </div>
+
+            <!-- Question Text -->
+            <div class="py-2">
+                <h3 id="questionText" class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white leading-relaxed">
+                    <!-- Question prompt inserted dynamically -->
+                </h3>
+            </div>
+
+            <!-- Options Grid -->
+            <div id="optionsContainer" class="grid grid-cols-1 gap-3">
+                <!-- Option buttons generated dynamically -->
+            </div>
+
+            <!-- Explanation & Next Area -->
+            <div id="explanationBox" class="hidden rounded-2xl p-4 border transition">
+                <div id="resultHeader" class="font-bold text-sm flex items-center space-x-2 mb-1">
+                    <!-- Correct/Incorrect badge -->
+                </div>
+                <p id="explanationText" class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                    <!-- Detailed formula explanation -->
+                </p>
+                <div class="mt-4 flex justify-end">
+                    <button onclick="nextQuestion()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md transition flex items-center space-x-2">
+                        <span>下一題</span>
+                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 3: Results Summary Screen -->
+        <div id="resultCard" class="hidden bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-700/80 shadow-xl space-y-8">
+            <div class="text-center space-y-3">
+                <div class="inline-flex p-4 bg-indigo-50 dark:bg-indigo-950/60 rounded-full text-indigo-600 dark:text-indigo-400 text-4xl mb-1">
+                    <i id="resultIcon" class="fa-solid fa-trophy"></i>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">測驗完成！</h2>
+                <p id="resultComment" class="text-sm text-slate-500 dark:text-slate-400">太棒了！你展現了優秀的數學公式掌握度。</p>
+            </div>
+
+            <!-- Score Cards -->
+            <div class="grid grid-cols-3 gap-3 text-center">
+                <div class="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/50">
+                    <div class="text-xs font-semibold text-slate-400 mb-1">最終得分</div>
+                    <div id="finalScore" class="text-xl sm:text-2xl font-extrabold text-indigo-600 dark:text-indigo-400">0</div>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/50">
+                    <div class="text-xs font-semibold text-slate-400 mb-1">答對率</div>
+                    <div id="finalAccuracy" class="text-xl sm:text-2xl font-extrabold text-emerald-500">0%</div>
+                </div>
+                <div class="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/50">
+                    <div class="text-xs font-semibold text-slate-400 mb-1">總耗時</div>
+                    <div id="finalTime" class="text-xl sm:text-2xl font-extrabold text-slate-700 dark:text-slate-300">00:00</div>
+                </div>
+            </div>
+
+            <!-- Incorrect Questions Review -->
+            <div id="reviewContainer" class="space-y-4">
+                <h3 class="font-bold text-slate-900 dark:text-white text-base flex items-center justify-between">
+                    <span>錯題複習區</span>
+                    <span id="wrongCountBadge" class="text-xs bg-rose-100 text-rose-600 dark:bg-rose-950 dark:text-rose-400 px-2.5 py-0.5 rounded-full font-bold">0 題</span>
+                </h3>
+                <div id="reviewList" class="space-y-3 max-h-60 overflow-y-auto pr-1">
+                    <!-- Wrong answers rendered here -->
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                <button onclick="goToModeSelect()" class="flex-1 py-3.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-bold text-sm rounded-2xl transition flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    <span>返回選單</span>
+                </button>
+                <button onclick="restartSameQuiz()" class="flex-1 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-2xl shadow-lg shadow-indigo-500/20 transition flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-play"></i>
+                    <span>再試一次</span>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="deployModal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 max-w-2xl w-full rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800/80">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <i class="fa-brands fa-github text-indigo-600 text-lg"></i>
+                    <span>如何部署此測驗 App 到 GitHub Pages</span>
+                </h3>
+                <button onclick="closeDeployGuide()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-4 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                <ol class="list-decimal list-inside space-y-3">
+                    <li><strong class="text-slate-800 dark:text-slate-100">準備檔案：</strong>將此頁面的程式碼儲存為名為 <code class="bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded text-indigo-600 dark:text-indigo-400 font-mono">index.html</code> 的單一檔案。</li>
+                    <li><strong class="text-slate-800 dark:text-slate-100">建立 Repository：</strong>登入 GitHub 點擊 <code class="bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded">New Repository</code>，設定名稱（例：<code class="bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded">math-quiz</code>）並保持公開（Public）。</li>
+                    <li><strong class="text-slate-800 dark:text-slate-100">上傳檔案：</strong>點擊 <code class="bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded">Upload an existing file</code>，將 <code class="bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded">index.html</code> 上傳並點擊 Commit。</li>
+                    <li><strong class="text-slate-800 dark:text-slate-100">開啟 GitHub Pages：</strong>進入專案頁面頁頂的 <code class="bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded">Settings</code> -> 左側選單 <code class="bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded">Pages</code>。</li>
+                    <li><strong class="text-slate-800 dark:text-slate-100">選擇分支發布：</strong>在 Branch 選項中選擇 <code class="bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded">main</code>（或 master）分支並點擊 Save。</li>
+                    <li><strong class="text-slate-800 dark:text-slate-100">發布成功：</strong>稍等 1-2 分鐘後重新整理，即可取得你的專屬網址！</li>
+                </ol>
+            </div>
+            <div class="px-6 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 flex justify-end">
+                <button onclick="closeDeployGuide()" class="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition">完成</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Question Dataset based on High School & Junior High Math Formulas
+        const questionBank = [
+            // 國中基礎
+            {
+                scope: "junior",
+                category: "乘法公式",
+                question: "和的平方公式：$(a+b)^2$ 展開後等於下列何者？",
+                options: ["$a^2 + b^2$", "$a^2 + 2ab + b^2$", "$a^2 - 2ab + b^2$", "$a^2 + ab + b^2$"],
+                answer: 1,
+                explanation: "$(a+b)^2 = (a+b)(a+b) = a^2 + 2ab + b^2$。"
+            },
+            {
+                scope: "junior",
+                category: "乘法公式",
+                question: "平方差公式：$(a+b)(a-b)$ 展開後等於下列何者？",
+                options: ["$a^2 - b^2$", "$a^2 + b^2$", "$(a-b)^2$", "$a^2 - 2ab + b^2$"],
+                answer: 0,
+                explanation: "$(a+b)(a-b) = a^2 - ab + ab - b^2 = a^2 - b^2$。"
+            },
+            {
+                scope: "junior",
+                category: "乘法公式",
+                question: "立方和公式：$a^3 + b^3$ 的因式分解等於何者？",
+                options: ["$(a+b)(a^2 + ab + b^2)$", "$(a+b)(a^2 - ab + b^2)$", "$(a-b)(a^2 + ab + b^2)$", "$(a+b)^3$"],
+                answer: 1,
+                explanation: "立方和公式為 $a^3 + b^3 = (a+b)(a^2 - ab + b^2)$。"
+            },
+            {
+                scope: "junior",
+                category: "幾何定理",
+                question: "在直角三角形中，兩股長為 $a, b$，斜邊長為 $c$，勾股定理（商高定理）的表示式為？",
+                options: ["$a + b = c$", "$a^2 + b^2 = c^2$", "$a^2 - b^2 = c^2$", "$ab = c^2$"],
+                answer: 1,
+                explanation: "勾股定理：直角三角形兩直角邊的平方和等於斜邊的平方，即 $a^2 + b^2 = c^2$。"
+            },
+            {
+                scope: "junior",
+                category: "代數方程",
+                question: "一元二次方程式 $ax^2 + bx + c = 0\\ (a \\neq 0)$ 的公式解為？",
+                options: [
+                    "$x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$",
+                    "$x = \\frac{b \\pm \\sqrt{b^2 - 4ac}}{2a}$",
+                    "$x = \\frac{-b \\pm \\sqrt{b^2 + 4ac}}{2a}$",
+                    "$x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{a}$"
+                ],
+                answer: 0,
+                explanation: "一元二次方程式的標準公式解為 $x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$。"
+            },
+            {
+                scope: "junior",
+                category: "代數方程",
+                question: "若 $x_1, x_2$ 為 $ax^2 + bx + c = 0$ 的兩根，則韋達定理中兩根之和 $x_1 + x_2$ 等於？",
+                options: ["$\\frac{b}{a}$", "$-\\frac{b}{a}$", "$\\frac{c}{a}$", "$-\\frac{c}{a}$"],
+                answer: 1,
+                explanation: "韋達定理（根與係數關係）：$x_1 + x_2 = -\\frac{b}{a}$，且 $x_1 x_2 = \\frac{c}{a}$。"
+            },
+            {
+                scope: "junior",
+                category: "解析幾何",
+                question: "平面上兩點 $A(x_1, y_1)$ 與 $B(x_2, y_2)$ 的中點座標公式為？",
+                options: [
+                    "$(\\frac{x_1-x_2}{2}, \\frac{y_1-y_2}{2})$",
+                    "$(\\frac{x_1+x_2}{2}, \\frac{y_1+y_2}{2})$",
+                    "$(\\sqrt{x_1 x_2}, \\sqrt{y_1 y_2})$",
+                    "$(x_1+x_2, y_1+y_2)$"
+                ],
+                answer: 1,
+                explanation: "中點座標即為兩點 $x$ 與 $y$ 座標各自算術平均：$(\\frac{x_1+x_2}{2}, \\frac{y_1+y_2}{2})$。"
+            },
+
+            // 高中進階
+            {
+                scope: "senior",
+                category: "數列與級數",
+                question: "等差級數前 $n$ 項和 $S_n$ 的計算公式（包含首項 $a_1$ 與公差 $d$）為？",
+                options: [
+                    "$S_n = n[a_1 + (n-1)d]$",
+                    "$S_n = \\frac{n[2a_1 + (n-1)d]}{2}$",
+                    "$S_n = \\frac{n(a_1 + d)}{2}$",
+                    "$S_n = a_1 r^{n-1}$"
+                ],
+                answer: 1,
+                explanation: "等差級數總和 $S_n = \\frac{n(a_1 + a_n)}{2} = \\frac{n[2a_1 + (n-1)d]}{2}$。"
+            },
+            {
+                scope: "senior",
+                category: "指數與對數",
+                question: "關於對數的換底公式，$\\log_a b$ 可以改寫為下列何者（$c>0, c \\neq 1$）？",
+                options: ["$\\frac{\\log_c a}{\\log_c b}$", "$\\frac{\\log_c b}{\\log_c a}$", "$\\log_c b - \\log_c a$", "$\\log_c(b-a)$"],
+                answer: 1,
+                explanation: "對數換底公式：$\\log_a b = \\frac{\\log_c b}{\\log_c a}$。"
+            },
+            {
+                scope: "senior",
+                category: "三角函數",
+                question: "正弦定理中，$\triangle ABC$ 的三邊為 $a,b,c$，外接圓半徑為 $R$，下列關係式何者正確？",
+                options: [
+                    "$\\frac{a}{\\sin A} = \\frac{b}{\\sin B} = \\frac{c}{\\sin C} = R$",
+                    "$\\frac{a}{\\sin A} = \\frac{b}{\\sin B} = \\frac{c}{\\sin C} = 2R$",
+                    "$\\frac{a}{\\cos A} = \\frac{b}{\\cos B} = \\frac{c}{\\cos C} = 2R$",
+                    "$a \\sin A = b \\sin B = c \\sin C = 2R$"
+                ],
+                answer: 1,
+                explanation: "正弦定理：$\\frac{a}{\\sin A} = \\frac{b}{\\sin B} = \\frac{c}{\\sin C} = 2R$。"
+            },
+            {
+                scope: "senior",
+                category: "三角函數",
+                question: "餘弦定理中，求邊長 $c^2$ 的表示式為？",
+                options: [
+                    "$c^2 = a^2 + b^2 - ab \\cos C$",
+                    "$c^2 = a^2 + b^2 - 2ab \\cos C$",
+                    "$c^2 = a^2 + b^2 + 2ab \\cos C$",
+                    "$c^2 = a^2 - b^2 - 2ab \\sin C$"
+                ],
+                answer: 1,
+                explanation: "餘弦定理：$c^2 = a^2 + b^2 - 2ab \\cos C$。"
+            },
+            {
+                scope: "senior",
+                category: "三角函數",
+                question: "二倍角公式中，$\\sin(2\\theta)$ 等於何者？",
+                options: ["$\\sin^2\\theta - \\cos^2\\theta$", "$2\\sin\\theta\\cos\\theta$", "$\\cos^2\\theta - \\sin^2\\theta$", "$2\\sin\\theta$"],
+                answer: 1,
+                explanation: "正弦二倍角公式：$\\sin(2\\theta) = 2\\sin\\theta\\cos\\theta$。"
+            },
+            {
+                scope: "senior",
+                category: "三角函數",
+                question: "半角公式中，$\\sin^2\\left(\\frac{\\theta}{2}\\right)$ 等於何者？",
+                options: ["$\\frac{1 - \\cos\\theta}{2}$", "$\\frac{1 + \\cos\\theta}{2}$", "$\\frac{1 - \\sin\\theta}{2}$", "$\\frac{1 + \\sin\\theta}{2}$"],
+                answer: 0,
+                explanation: "半角公式：$\\sin^2\\left(\\frac{\\theta}{2}\\right) = \\frac{1-\\cos\\theta}{2}$，而 $\\cos^2\\left(\\frac{\\theta}{2}\\right) = \\frac{1+\\cos\\theta}{2}$。"
+            },
+            {
+                scope: "senior",
+                category: "不等式",
+                question: "柯西不等式 (Cauchy-Schwarz Inequality) 的平面的形式為？",
+                options: [
+                    "$(a^2+b^2)(x^2+y^2) \\ge (ax+by)^2$",
+                    "$(a+b)(x+y) \\ge ax+by$",
+                    "$(a^2-b^2)(x^2-y^2) \\ge (ax-by)^2$",
+                    "$\\frac{a+b}{2} \\ge \\sqrt{ab}$"
+                ],
+                answer: 0,
+                explanation: "柯西不等式：$(a^2+b^2)(x^2+y^2) \\ge (ax+by)^2$，當且僅當 $ay = bx$ 時等號成立。"
+            },
+            {
+                scope: "senior",
+                category: "解析幾何",
+                question: "點 $P(x_0, y_0)$ 到直線 $L: ax + by + c = 0$ 的距離公式 $d$ 為？",
+                options: [
+                    "$d = \\frac{|ax_0 + by_0 + c|}{a^2 + b^2}$",
+                    "$d = \\frac{|ax_0 + by_0 + c|}{\\sqrt{a^2 + b^2}}$",
+                    "$d = \\frac{ax_0 + by_0 + c}{\\sqrt{a^2 + b^2}}$",
+                    "$d = \\sqrt{(x_0-a)^2 + (y_0-b)^2}$"
+                ],
+                answer: 1,
+                explanation: "點到直線距離公式：$d = \\frac{|ax_0 + by_0 + c|}{\\sqrt{a^2 + b^2}}$。"
+            },
+            {
+                scope: "senior",
+                category: "機率統計",
+                question: "在事件 $B$ 發生的條件下，事件 $A$ 發生的條件機率 $P(A|B)$ 公式為？",
+                options: ["$\\frac{P(A)}{P(B)}$", "$\\frac{P(A \\cap B)}{P(B)}$", "$\\frac{P(A \\cap B)}{P(A)}$", "$P(A) \\cdot P(B)$"],
+                answer: 1,
+                explanation: "條件機率公式：$P(A|B) = \\frac{P(A \\cap B)}{P(B)}$ (其中 $P(B) > 0$)"
+            },
+            {
+                scope: "senior",
+                category: "微積分",
+                question: "冪函數的微分公式：$\\frac{d}{dx}(x^n)$ 等於？",
+                options: ["$x^{n-1}$", "$n x^{n-1}$", "$\\frac{x^{n+1}}{n+1}$", "$n x^n$"],
+                answer: 1,
+                explanation: "冪函數微分公式：$\\frac{d}{dx}(x^n) = n x^{n-1}$。"
+            }
+        ];
+
+        // Quiz State Management
+        let currentScope = 'all';
+        let currentTargetCount = 10;
+        let activeQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let timerInterval = null;
+        let elapsedSeconds = 0;
+        let wrongAnswers = [];
+        let hasAnsweredCurrent = false;
+
+        function selectScope(scope) {
+            currentScope = scope;
+            document.querySelectorAll('.scope-btn').forEach(btn => {
+                if(btn.getAttribute('scope-btn') === scope) {
+                    btn.className = "scope-btn p-4 rounded-2xl border-2 text-left transition flex flex-col justify-between border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30";
+                } else {
+                    btn.className = "scope-btn p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 text-left transition flex flex-col justify-between hover:border-slate-300";
+                }
+            });
+        }
+
+        function selectCount(count) {
+            currentTargetCount = count;
+            document.querySelectorAll('.count-btn').forEach(btn => {
+                if(parseInt(btn.getAttribute('count-btn')) === count) {
+                    btn.className = "count-btn p-3 rounded-xl border-2 border-indigo-600 font-bold text-sm text-center transition bg-indigo-50/50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400";
+                } else {
+                    btn.className = "count-btn p-3 bg-white dark:bg-slate-800 rounded-xl border-2 border-slate-200 dark:border-slate-700 font-bold text-sm text-center transition text-slate-700 dark:text-slate-300";
+                }
+            });
+        }
+
+        function startQuiz() {
+            // Filter questions by scope
+            let pool = questionBank.filter(q => currentScope === 'all' || q.scope === currentScope);
+            
+            // Shuffle pool
+            pool = [...pool].sort(() => Math.random() - 0.5);
+
+            // Select count
+            if (currentTargetCount > 0 && currentTargetCount < pool.length) {
+                activeQuestions = pool.slice(0, currentTargetCount);
+            } else {
+                activeQuestions = pool;
+            }
+
+            // Reset state
+            currentIndex = 0;
+            score = 0;
+            elapsedSeconds = 0;
+            wrongAnswers = [];
+
+            // UI view toggle
+            document.getElementById('setupCard').classList.add('hidden');
+            document.getElementById('resultCard').classList.add('hidden');
+            document.getElementById('quizCard').classList.remove('hidden');
+
+            // Start Timer
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                elapsedSeconds++;
+                const mins = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
+                const secs = String(elapsedSeconds % 60).padStart(2, '0');
+                document.getElementById('timerText').innerText = `${mins}:${secs}`;
+            }, 1000);
+
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            hasAnsweredCurrent = false;
+            const q = activeQuestions[currentIndex];
+
+            // Render Header & Progress
+            document.getElementById('questionCategory').innerText = q.category;
+            document.getElementById('questionTracker').innerText = `第 ${currentIndex + 1} / ${activeQuestions.length} 題`;
+            document.getElementById('scoreText').innerText = score;
+            
+            const progressPercent = ((currentIndex) / activeQuestions.length) * 100;
+            document.getElementById('progressBar').style.width = `${progressPercent}%`;
+
+            // Hide explanation
+            const expBox = document.getElementById('explanationBox');
+            expBox.classList.add('hidden');
+
+            // Render Question Text
+            document.getElementById('questionText').innerHTML = q.question;
+
+            // Render Options
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+
+            q.options.forEach((optText, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn w-full p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-indigo-500 text-left font-medium text-sm sm:text-base transition flex items-center justify-between group";
+                btn.onclick = () => checkAnswer(idx);
+                btn.innerHTML = `
+                    <div class="flex items-center space-x-3 w-full">
+                        <span class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 group-hover:bg-indigo-600 group-hover:text-white font-bold text-xs flex items-center justify-center transition shrink-0">
+                            ${String.fromCharCode(65 + idx)}
+                        </span>
+                        <span class="text-slate-800 dark:text-slate-200">${optText}</span>
+                    </div>
+                `;
+                container.appendChild(btn);
+            });
+
+            // Re-render LaTeX
+            renderMathInElement(document.getElementById('quizCard'), {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false}
+                ],
+                throwOnError: false
+            });
+        }
+
+        function checkAnswer(selectedIndex) {
+            if (hasAnsweredCurrent) return;
+            hasAnsweredCurrent = true;
+
+            const q = activeQuestions[currentIndex];
+            const isCorrect = selectedIndex === q.answer;
+            const optionBtns = document.querySelectorAll('.option-btn');
+
+            // Disable further clicks
+            optionBtns.forEach(btn => btn.onclick = null);
+
+            if (isCorrect) {
+                score += 10;
+                optionBtns[selectedIndex].classList.remove('border-slate-200', 'dark:border-slate-700');
+                optionBtns[selectedIndex].classList.add('border-emerald-500', 'bg-emerald-50/50', 'dark:bg-emerald-950/30');
+            } else {
+                optionBtns[selectedIndex].classList.remove('border-slate-200', 'dark:border-slate-700');
+                optionBtns[selectedIndex].classList.add('border-rose-500', 'bg-rose-50/50', 'dark:bg-rose-950/30');
+                
+                // Highlight correct option
+                optionBtns[q.answer].classList.remove('border-slate-200', 'dark:border-slate-700');
+                optionBtns[q.answer].classList.add('border-emerald-500', 'bg-emerald-50/50', 'dark:bg-emerald-950/30');
+
+                // Record wrong question
+                wrongAnswers.push({
+                    question: q.question,
+                    yourAns: q.options[selectedIndex],
+                    correctAns: q.options[q.answer],
+                    explanation: q.explanation
+                });
+            }
+
+            document.getElementById('scoreText').innerText = score;
+
+            // Show explanation
+            const expBox = document.getElementById('explanationBox');
+            const resHeader = document.getElementById('resultHeader');
+            const expText = document.getElementById('explanationText');
+
+            if (isCorrect) {
+                expBox.className = "rounded-2xl p-4 border border-emerald-200 bg-emerald-50/40 dark:bg-emerald-950/20 dark:border-emerald-800/50";
+                resHeader.className = "font-bold text-sm text-emerald-600 dark:text-emerald-400 flex items-center space-x-2 mb-1";
+                resHeader.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>回答正確！</span>`;
+            } else {
+                expBox.className = "rounded-2xl p-4 border border-rose-200 bg-rose-50/40 dark:bg-rose-950/20 dark:border-rose-800/50";
+                resHeader.className = "font-bold text-sm text-rose-600 dark:text-rose-400 flex items-center space-x-2 mb-1";
+                resHeader.innerHTML = `<i class="fa-solid fa-circle-xmark"></i><span>回答錯誤</span>`;
+            }
+
+            expText.innerHTML = q.explanation;
+            expBox.classList.remove('hidden');
+
+            renderMathInElement(expBox, {
+                delimiters: [
+                    {left: "$$", right: "$$", display: true},
+                    {left: "$", right: "$", display: false}
+                ],
+                throwOnError: false
+            });
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+            if (currentIndex < activeQuestions.length) {
+                loadQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function finishQuiz() {
+            clearInterval(timerInterval);
+
+            document.getElementById('quizCard').classList.add('hidden');
+            document.getElementById('resultCard').classList.remove('hidden');
+
+            const total = activeQuestions.length;
+            const correctCount = (score / 10);
+            const accuracy = Math.round((correctCount / total) * 100);
+
+            document.getElementById('finalScore').innerText = score;
+            document.getElementById('finalAccuracy').innerText = `${accuracy}%`;
+
+            const mins = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
+            const secs = String(elapsedSeconds % 60).padStart(2, '0');
+            document.getElementById('finalTime').innerText = `${mins}:${secs}`;
+
+            // Comment text based on score
+            const comment = document.getElementById('resultComment');
+            if (accuracy === 100) comment.innerText = "太完美了！你對國高中數學公式瞭若指掌！";
+            else if (accuracy >= 70) comment.innerText = "表現優秀！絕大多數重點定理都難不倒你！";
+            else comment.innerText = "繼續加油！多複習錯題能讓你迅速進步！";
+
+            // Render Wrong Answers Review
+            const reviewList = document.getElementById('reviewList');
+            const wrongBadge = document.getElementById('wrongCountBadge');
+            reviewList.innerHTML = '';
+
+            wrongBadge.innerText = `${wrongAnswers.length} 題`;
+
+            if (wrongAnswers.length === 0) {
+                reviewList.innerHTML = `<div class="text-xs text-slate-400 text-center py-4">無錯題！完美過關！🎉</div>`;
+            } else {
+                wrongAnswers.forEach((item, i) => {
+                    const card = document.createElement('div');
+                    card.className = "p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 text-xs space-y-1.5";
+                    card.innerHTML = `
+                        <div class="font-bold text-slate-800 dark:text-slate-200">${i + 1}. ${item.question}</div>
+                        <div class="text-rose-500">你的回答：${item.yourAns}</div>
+                        <div class="text-emerald-500 font-semibold">正確公式：${item.correctAns}</div>
+                        <div class="text-slate-500 pt-1 border-t border-slate-200/50 dark:border-slate-800">${item.explanation}</div>
+                    `;
+                    reviewList.appendChild(card);
+                });
+
+                renderMathInElement(reviewList, {
+                    delimiters: [
+                        {left: "$$", right: "$$", display: true},
+                        {left: "$", right: "$", display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        }
+
+        function restartSameQuiz() {
+            startQuiz();
+        }
+
+        function goToModeSelect() {
+            clearInterval(timerInterval);
+            document.getElementById('quizCard').classList.add('hidden');
+            document.getElementById('resultCard').classList.add('hidden');
+            document.getElementById('setupCard').classList.remove('hidden');
+        }
+
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                icon.className = "fa-solid fa-moon";
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                icon.className = "fa-solid fa-sun";
+            }
+        }
+
+        function openDeployGuide() {
+            document.getElementById('deployModal').classList.remove('hidden');
+        }
+        function closeDeployGuide() {
+            document.getElementById('deployModal').classList.add('hidden');
+        }
+
+        // Initialize KaTeX and theme settings on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            const icon = document.getElementById('theme-icon');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                icon.className = "fa-solid fa-sun";
+            }
+        });
+    </script>
+</body>
+</html>
